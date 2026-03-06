@@ -17,6 +17,7 @@ export default function Home() {
   const [result, setResult] = useState<RecipeData | null>(null)
   const [resultTitle, setResultTitle] = useState('')
   const [tab, setTab] = useState<'steps' | 'ingredients' | 'shopping'>('steps')
+  const [error, setError] = useState('')
 
   const generate = async () => {
     if (!dishName.trim()) return
@@ -27,6 +28,12 @@ export default function Home() {
       body: JSON.stringify({ dishName })
     })
     const data = await res.json()
+    if (data.error) {
+      setError(data.error)
+      setLoading(false)
+      return
+    }
+    setError('')
     setResultTitle(data.title || dishName)
     setResult(data)
     setDishName('')
@@ -36,7 +43,6 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-orange-50 via-rose-50 to-pink-50">
-      {/* ヘッダー */}
       <div className="relative overflow-hidden bg-gradient-to-r from-orange-400 via-rose-400 to-pink-400 px-6 py-12 text-white">
         <div className="absolute inset-0 bg-black/10" />
         <div className="relative max-w-xl mx-auto text-center">
@@ -51,7 +57,6 @@ export default function Home() {
       </div>
 
       <div className="max-w-xl mx-auto px-4 py-8">
-        {/* 入力エリア */}
         <Card className="border-0 shadow-xl shadow-rose-100 mb-6 overflow-hidden">
           <div className="h-1 bg-gradient-to-r from-orange-400 via-rose-400 to-pink-400" />
           <CardContent className="pt-6 pb-6">
@@ -73,6 +78,9 @@ export default function Home() {
               >
                 {loading ? '⏳ AIが考えています...' : '🍳 レシピを生成する'}
               </Button>
+              {error && (
+                <p className="text-red-500 text-sm font-bold text-center">{error}</p>
+              )}
             </div>
             {loading && (
               <div className="mt-4 flex items-center gap-2 text-rose-400">
@@ -83,23 +91,18 @@ export default function Home() {
           </CardContent>
         </Card>
 
-        {/* 結果 */}
         {result && (
           <Card className="border-0 shadow-xl shadow-orange-100 overflow-hidden">
             <div className="h-1 bg-gradient-to-r from-orange-400 via-rose-400 to-pink-400" />
             <CardContent className="pt-6">
-            <div className="flex items-center justify-between mb-4">
-  <div className="flex items-center gap-2">
-    <span className="text-2xl">🍽️</span>
-    <h2 className="text-xl font-black text-gray-800">{result?.title || resultTitle}</h2>
-  </div>
-  <button
-    onClick={() => setResult(null)}
-    className="text-gray-400 hover:text-gray-600 text-sm font-bold"
-  >
-    ✕
-  </button>
-</div>
+
+              {/* タイトル */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">🍽️</span>
+                  <h2 className="text-xl font-black text-gray-800">{resultTitle}</h2>
+                </div>
+              </div>
 
               {/* タブ */}
               <div className="flex gap-2 mb-4">
@@ -123,7 +126,7 @@ export default function Home() {
               </div>
 
               {/* タブコンテンツ */}
-              <div className="bg-gradient-to-br from-orange-50 to-rose-50 rounded-2xl p-4">
+              <div className="bg-gradient-to-br from-orange-50 to-rose-50 rounded-2xl p-4 mb-4">
                 {tab === 'steps' && (
                   <ol className="space-y-3">
                     {result.steps.map((step, i) => (
@@ -159,6 +162,32 @@ export default function Home() {
                   </ul>
                 )}
               </div>
+
+              {/* XシェアとAmazonボタン */}
+              <div className="flex gap-3 mb-3">
+                
+                 <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent('「' + resultTitle + '」のレシピをAIで生成しました🍱\n手順・食材・買い物リストが一瞬で完成！\n\n👇 無料で使えます\nhttps://recipeai-ashen.vercel.app\n\n#RecipeAI #料理 #時短')}`}
+                  target="_blank"
+                  className="flex-1 text-center py-3 bg-black text-white text-sm font-bold rounded-xl hover:bg-zinc-800 transition-all"
+                >
+                  🐦 Xでシェア
+                </a>
+               <a href={`https://www.amazon.co.jp/s?k=${encodeURIComponent(resultTitle + ' 食材 調理器具')}&tag=aicheck-22`}
+  target="_blank"
+  className="flex-1 text-center py-3 bg-amber-400 text-black text-sm font-bold rounded-xl hover:bg-amber-500 transition-all"
+>
+  📦 食材・調理器具を探す
+</a>
+              </div>
+
+              {/* 閉じるボタン */}
+              <button
+                onClick={() => setResult(null)}
+                className="w-full py-3 border-2 border-gray-200 text-gray-500 text-sm font-bold rounded-xl hover:bg-gray-50 transition-all"
+              >
+                ✕ 閉じる
+              </button>
+
             </CardContent>
           </Card>
         )}
