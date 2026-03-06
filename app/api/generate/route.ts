@@ -3,23 +3,33 @@ import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
   const { dishName } = await request.json()
-
   const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
 
   const result = await model.generateContent(`
-「${dishName}」のレシピを以下の形式で日本語で教えてください。
+「${dishName}」のレシピをJSON形式で返してください。
+マークダウン記法は使わないでください。
+必ず以下のJSON形式のみで返してください。他の文章は不要です。
 
- レシピ
-調理手順を番号付きで書いてください。
-
- 必要な食材
-食材を箇条書きで書いてください。
-
-買い物リスト
-スーパーで買うべきものだけを箇条書きで書いてください。
+{
+  "title": "料理の正式名称をここに入れる",
+  "steps": ["手順1", "手順2", "手順3"],
+  "ingredients": ["食材1 適量", "食材2 少々"],
+  "shopping": ["買うもの1", "買うもの2"]
+}
   `)
 
   const text = result.response.text()
-
-  return NextResponse.json({ recipe: text })
+  const clean = text.replace(/\`\`\`json|\`\`\`/g, '').trim()
+  
+  try {
+    const parsed = JSON.parse(clean)
+    return NextResponse.json(parsed)
+  } catch {
+    return NextResponse.json({ 
+      title: dishName,
+      steps: [text], 
+      ingredients: [], 
+      shopping: [] 
+    })
+  }
 }

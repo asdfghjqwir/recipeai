@@ -12,11 +12,16 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const { dish_name, recipe, ingredients, shopping_list } = await request.json()
+  const { dish_name, steps, ingredients, shopping } = await request.json()
 
   const { data, error } = await supabase
     .from('recipes')
-    .insert([{ dish_name, recipe, ingredients, shopping_list }])
+    .insert([{ 
+      dish_name, 
+      recipe: JSON.stringify({ steps, ingredients, shopping }),
+      ingredients: '',
+      shopping_list: ''
+    }])
     .select()
 
   if (error) return NextResponse.json({ error }, { status: 500 })
