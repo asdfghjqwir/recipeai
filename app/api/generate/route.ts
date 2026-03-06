@@ -9,13 +9,13 @@ export async function POST(request: Request) {
   const result = await model.generateContent(`
 「${dishName}」のレシピを以下の形式で日本語で教えてください。
 
-## レシピ
+ レシピ
 調理手順を番号付きで書いてください。
 
-## 必要な食材
+ 必要な食材
 食材を箇条書きで書いてください。
 
-## 買い物リスト
+買い物リスト
 スーパーで買うべきものだけを箇条書きで書いてください。
   `)
 
